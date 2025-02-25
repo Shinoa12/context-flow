@@ -17,8 +17,8 @@ class AnswerResponse(BaseModel):
     link: str
 
 @app.post("/ask", response_model=AnswerResponse)
-async def ask_question(question: str) -> str:
-    clean_question = clean_text(question)
+async def ask_question(request: QuestionRequest):
+    clean_question = clean_text(request.question)
 
     results = query_text(clean_question)
     if not results:

@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     PINECONE_INDEX: str
     GROQ_API_KEY: str
     OPENAI_API_KEY: str
+    HUGGINGFACE_MODEL: str
 
     class Config:
         env_file = ".env"

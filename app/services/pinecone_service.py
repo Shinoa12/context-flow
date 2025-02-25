@@ -2,7 +2,7 @@ from app.core.config import settings
 from pinecone import Pinecone
 from langchain_core.documents import Document
 from langchain_pinecone import PineconeVectorStore
-from langchain_openai import OpenAIEmbeddings
+from langchain.embeddings import HuggingFaceEmbeddings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 pc = Pinecone(api_key=settings.PINECONE_API_KEY)
 index_name = settings.PINECONE_INDEX
 index = pc.Index(index_name)
-embedder = OpenAIEmbeddings(model="text-embedding-ada-002")
+embedder = HuggingFaceEmbeddings(model_name=settings.HUGGINGFACE_MODEL)
 vector_store = PineconeVectorStore(index=index, embedding=embedder)
 
 
@@ -27,7 +27,7 @@ def store_text(texts: list, metadatas: list):
 
 def query_text(query: str, top_k: int = 5):
     try:
-        results = vector_store.similarity_search(query, top_k=top_k)
+        results = vector_store.similarity_search(query, k=top_k)
         return results
     except Exception as e:
         logger.error(f"❌ Error al consultar embeddings: {e}")
