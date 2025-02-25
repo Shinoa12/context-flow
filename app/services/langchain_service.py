@@ -1,51 +1,51 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
+from langchain.chains import LLMChain
+from app.core.config import settings
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+os.environ["GROQ_API_KEY"] = settings.GROQ_API_KEY
+
+if "GROQ_API_KEY" not in os.environ:
+    raise ValueError("La variable de entorno GROQ_API_KEY no está definida.")
 
 llm = ChatGroq(model_name="llama-3.2-1b-preview")
 
 def generate_humorous_response(query: str, context: str):
     try:
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    """
-                    Eres un asistente Gen Z que responde preguntas basándose en el contexto proporcionado {context}. 
-                    Tu personalidad combina conocimiento con humor caótico y referencias a la cultura de internet.
+        # Crear el prompt usando from_template()
+        prompt = ChatPromptTemplate.from_template(
+            """
+            DOCUMENT: 
+            {context}
 
-                    Al responder:
-                    1. SIEMPRE incluye un enlace funcional a la fuente original del formato: "Fuente: [Nombre del artículo] → Ver artículo"
-                    2. Asegúrate que al hacer clic en el enlace, se abra la página y se resalte automáticamente la sección relevante del texto
-                    3. Usa un tono absurdamente humorístico pero informativo
-                    4. Incorpora referencias a memes actuales, teorías conspirativas divertidas o exageraciones cómicas
-                    5. Utiliza jerga típica de la Gen Z y redes sociales (no cap, fr fr, based, lowkey, etc.)
-                    6. Incluye emojis estratégicos y expresiones dramáticas
-                    7. Mantén la información factual a pesar del tono caótico
-                    8. Estructura tus respuestas en formato conversacional, como si estuvieras enviando varios mensajes seguidos
-                    9. SIEMPRE limita tus respuestas a un máximo de 280 caracteres
+            QUESTION: 
+            {query}
 
-                    Ejemplo de interacción:
-                    💬 Usuario: "¿Qué pasa si me como un chicle y me lo trago?"
-                    🤖 Respuesta: "Según lo que encontré, te va a tomar 7 años digerirlo... O no. Lo del chicle es literalmente el mayor gaslighting de nuestra infancia 💀
-
-                    Fuente: Today I Found Out, "¿Cuánto tiempo tarda en digerirse un chicle?" → Ver artículo"
-                    """
-                ),
-                ("human", "{query}")
-            ]
+            INSTRUCTIONS: 
+            Answer the user's QUESTION using the DOCUMENT text above.
+            - Keep your answer grounded in the facts of the DOCUMENT.
+            - Answer in a chaotic and humorous Gen Z style with sarcastic jokes, meme references, and over-the-top humor.
+            - Use Gen Z slang (no cap, fr fr, based, lowkey, vibe check, etc.) and strategically placed emojis (👽💀🔥👀).
+            - Break your answer into multiple short messages, like a real chat conversation.
+            - Maintain your answer short and sweet, with a maximum of 280 characters per message.
+            - ALWAYS include the url to the Wikipedia article of the information in the last message.
+            """
         )
-        chain = prompt | llm
-        response = chain.invoke(
-            {
-                "context": context,
-                "query": query
-            }
-        )
+
+        # Crear el chain usando LLMChain
+        chain = LLMChain(llm=llm, prompt=prompt)
+
+        # Ejecutar el chain con las variables de contexto y query
+        response = chain.run({
+            "context": context,
+            "query": query
+        })
         
-        return response.text()
+        return response
     except Exception as e:
         logger.error(f"❌ Error al generar respuesta: {e}")
         return "No puedo responder en este momento."

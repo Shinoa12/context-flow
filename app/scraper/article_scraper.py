@@ -50,8 +50,10 @@ def get_article_content(url):
 
         # Encontrar el título y el contenido del artículo
         title = soup.find("h1", {"id": "firstHeading"}).text
-        content = soup.find("div", {"class": "mw-parser-output"}).text
-
+        content_div = soup.find("div", {"class": "mw-body-content"})
+        paragraphs = content_div.find_all("p")
+        print(paragraphs)
+        content = " ".join([p.text for p in paragraphs if p.text.strip()])
         return {
             "title": title, 
             "content": content, 

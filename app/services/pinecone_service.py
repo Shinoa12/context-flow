@@ -2,7 +2,7 @@ from app.core.config import settings
 from pinecone import Pinecone
 from langchain_core.documents import Document
 from langchain_pinecone import PineconeVectorStore
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 import logging
 
 logger = logging.getLogger(__name__)
